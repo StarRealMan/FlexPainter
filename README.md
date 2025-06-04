@@ -12,3 +12,14 @@
 </p>
 
 This repository contains code for the paper FlexPainter: Flexible and Multi-View Consistent Texture Generation, an texture generation method that uses flexible, multi-modal inputs.
+
+## Citation
+If you find this work useful for your research, please cite our paper:
+```bibtex
+@article{yan2024flexipainter,
+  title={FlexPainter: Flexible and Multi-View Consistent Texture Generation},
+  author={Dongyu Yan, Leyi Wu, Jiantao Lin, Luozhou Wang, Tianshuo Xu, Zhifei Chen, Zhen Yang, Lie Xu, Shunsi Zhang, Yingcong Chen},
+  journal={arXiv preprint arXiv:2506.02620},
+  year={2025}
+}
+```
