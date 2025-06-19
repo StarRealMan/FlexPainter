@@ -1,0 +1,54 @@
+tracker_project_name: texture3d
+output_dir: exp
+logging_dir: logs
+resume_from_checkpoint: latest
+use_ema: true
+
+learning_rate: 1e-4
+lr_scheduler: constant
+lr_warmup_steps: 10
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_weight_decay: 0.05
+adam_epsilon: 1e-8
+max_grad_norm: 1.0
+
+max_train_steps: 100000
+checkpointing_steps: 2000
+checkpoints_total_limit: 20
+gradient_accumulation_steps: 2
+
+disable_sampling: false
+sample_every: 500
+sanity_check: true
+sample_path: ./demo
+val_mesh_scale: 0.9
+bg_color: [0.0, 0.0, 0.0]
+render_size: 512
+render_frame_num: 90
+render_ele: 10
+
+perceptual_num: 4
+perceptual_ele_range: 30
+perceptual_weight: 0.5
+
+data_config:
+  train_batch_size: 1
+  num_workers: 1
+  base_path: /hpc2hdd/JH_DATA/share/yingcongchen/PrivateShareGroup/yingcongchen_datasets/3d_dataset/texture3d_obj_with_one_texture/
+  gen_path: ./gen_data
+  use_try_catch: true
+
+model_config:
+  in_channels: 34
+  out_channels: 4
+  num_layers: [ 1, 1, 1]
+  point_block_num: [ 1, 1, 2]
+  block_out_channels: [ 64, 256, 1024] 
+  dropout: [ 0.0, 0.0, 0.0]
+  use_uv_head: true
+  block_type: [ "uv", "point_uv", "uv_dit"] 
+  voxel_size: [ 0.01, 0.02, 0.05]
+  window_size: [ 0, 256, 512] # in fact patch "length", not window size
+  num_heads: [ 4, 4, 16]
+  weights: null
