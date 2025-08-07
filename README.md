@@ -17,34 +17,88 @@ This repository contains code for the paper FlexPainter: Flexible and Multi-View
 ## Install
 
 ```sh
-conda create -n flexpainter python==3.10
+conda create -n flexpainter python==3.10 -y
 conda activate flexpainter
 
 pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+conda install google-sparsehash -c bioconda -y
 pip install -r requirements.txt
 ```
 
 ## Usage
 
+Download checkpoints using huggingface-cli:
+
+```sh
+  huggingface-cli login
+  huggingface-cli download StarYDY/FlexPainter --local-dir ./ckpts
+```
+
+Generate Blank Embeddings for CFG:
+
+```sh
+  python gen_blank.py
+```
+
 Run texting with image prompt:
 
 ```sh
- python test.py --mesh_path ./demo/cases/sofa/model.obj --image_prompt ./demo/cases/sofa/cond.png
+ python test.py \
+    --mesh_path ./demo/axe/13b98c410feb42dc940f0b40b96af9c0.obj \
+    --image_prompt ./demo/axe/cond.jpg
 ```
 
 Run testing with text prompt:
 
 ```sh
- python test.py --mesh_path ./demo/cases/sofa/model.obj --text_prompt "A modern sofa with a blue cushion"
+ python test.py \
+    --mesh_path ./demo/axe/13b98c410feb42dc940f0b40b96af9c0.obj \
+    --prompt "An axe with wooden handle and metal blade"
+```
+
+Run joint generation with a lower image strength:
+
+```sh
+ python test.py \
+    --mesh_path ./demo/axe/13b98c410feb42dc940f0b40b96af9c0.obj \
+    --image_prompt ./demo/axe/cond.jpg \
+    --prompt "An axe with wooden handle and metal blade" \
+    --image_strength 0.1
 ```
 
 Run stylization:
 
 ```sh
- python test.py --mesh_path ./demo/cases/sofa/model.obj --image_prompt ./demo/styles/icy.jpg --stylization
+ python test.py \
+    --mesh_path ./demo/axe/13b98c410feb42dc940f0b40b96af9c0.obj \
+    --image_prompt ./demo/styles/icy.jpg \
+    --stylize
 ```
 
-Additional upsampling can be done using RealESRGan and the checkpoint trained on UV space: ```./ckpts/realesrgan/net_g.pth```.
+Additional upsampling can be done using RealESRGan and the checkpoint trained on UV space: ```./ckpts/realesrgan/net_g.pth```:
+
+```sh
+  # clone the original Real-ESRGAN repo
+  git clone https://github.com/xinntao/Real-ESRGAN.git
+  cd Real-ESRGAN
+  # install
+  pip install basicsr
+  pip install facexlib
+  pip install gfpgan
+  pip install -r requirements.txt
+  python setup.py develop
+  # inference
+  cd ./Real-ESRGAN
+  python inference_realesrgan.py --model_path ../ckpts/realesrgan/net_g.pth -i <your-input-texture-image>
+```
+
+## Acknowledgements
+
+Our work builds upon these excellent repositories:
+
+- [TEXGen](https://github.com/CVMI-Lab/TEXGen)
+- [FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev)
+- [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 
 ## Citation
 

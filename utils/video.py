@@ -6,6 +6,7 @@ from spuv.nvdiffrast_utils import render_rgb_from_texture_mesh
 from spuv.ops import get_projection_matrix, get_mvp_matrix
 from spuv.camera import get_c2w
 from torchvision.utils import save_image
+
 def gen_camera_path(frame_num, ele, camera_dist, fovy):
     eles = torch.tensor([ele for _ in range(frame_num)])
     azims = torch.tensor([i/frame_num * 360 for i in range(frame_num)])
@@ -21,7 +22,6 @@ def gen_camera_path(frame_num, ele, camera_dist, fovy):
 
     return mvp
 
-
 def gen_views(eles, azims, fovy, camera_dist):
     c2w = get_c2w(azims, eles, camera_dist)
     proj = get_projection_matrix(fovy, 1, 0.1, 1000.0)
@@ -32,7 +32,6 @@ def gen_views(eles, azims, fovy, camera_dist):
 def render_eight_views(dist, fov, device, ctx, mesh, uv_map, render_size, bg, output_path):
     eles = torch.tensor([-10, 15, -10, 15, -10, 15, -10, 15])
     azims = torch.tensor([0, 45, 90, 135, 180, 225, 270, 315])
-    # breakpoint()
     dist = dist.to('cpu')
     mvps = gen_views(eles, azims, fov, dist)
     mvps = mvps.to(device)

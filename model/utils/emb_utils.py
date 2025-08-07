@@ -37,7 +37,6 @@ class CombinedTimestepClipEmbeddings(nn.Module):
     def forward(self, timestep, clip_embedding, hidden_dtype=None):
         timesteps_proj = self.time_proj(timestep)
         timesteps_emb = self.timestep_embedder(timesteps_proj.to(dtype=hidden_dtype))  # (N, D)
-        #breakpoint()
         if self.double_projection:
             clip_embedding_projection = self.clip_embedding_projection(clip_embedding[0])
             clip_embedding_projection2 = self.clip_embedding_projection2(clip_embedding[1])

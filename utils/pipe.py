@@ -132,7 +132,6 @@ def mv_sync_cfg_generation(pipe, redux_pipe, prompt, image_prompt, depths, sampl
 
     return images
 
-
 def mv_sync_cfg_intermediate(pipe, redux_pipe, prompt, image_prompt, depths, timesteps, use_custom_timestep, 
                              cfg_scale, generator, redux_strength, true_cfg, blank_txt=None, blank_vec=None):
     grid_depths = rearrange(depths, "(rows cols) c h w -> c (rows h) (cols w)", rows=2, cols=2)

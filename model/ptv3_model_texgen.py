@@ -21,7 +21,7 @@ from collections import defaultdict
 import time
 from einops import rearrange
 
-from utils.nan import replace_nan
+from utils.misc import replace_nan
 
 @torch.inference_mode()
 def offset2bincount(offset):
@@ -175,7 +175,6 @@ class Point(Dict):
         )
         self["sparse_shape"] = sparse_shape
         self["sparse_conv_feat"] = sparse_conv_feat
-        #breakpoint()
 
 class PointModule(nn.Module):
     r"""PointModule

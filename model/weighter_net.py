@@ -18,7 +18,7 @@ from model.ptv3_model_texgen import (
     TimeBlock,
 )
 
-from utils.nan import replace_nan
+from utils.misc import replace_nan
 
 class WeighterNet(BaseModule):
     @dataclass
@@ -113,7 +113,6 @@ class WeighterNet(BaseModule):
 
         self.cond_embedder = TimestepEmbeddings(embedding_dim=1024)
         self.output_conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1)
-
         self.weight_initialization()
 
     def weight_initialization(self):
@@ -172,7 +171,7 @@ class WeighterNet(BaseModule):
             position_map = position_map.detach()
             normal_map = normal_map.detach()
             uv_bake_masks = uv_bake_masks.detach()
-
+        
         B, V, C, H, W = gen_bakes.shape
         gen_bakes = gen_bakes.reshape(B, V * C, H, W).contiguous()
         rays = rays.reshape(B, V * C, H, W).contiguous()
@@ -181,15 +180,12 @@ class WeighterNet(BaseModule):
         
         x_concat = torch.cat([gen_bakes, rays, normal_map, position_map, uv_bake_masks], dim=1)
         x_concat = replace_nan(x_concat, 0.0)
-        if torch.isnan(x_concat).any():
-            print("x_concat has NaN values")
-            breakpoint()
         x_dense = self.input_conv(x_concat) * uv_mask
 
         pyramid_features = []
         pyramid_mask = []
         pyramid_position = []
-        
+
         timestep_embedding = self.cond_embedder(timestep)
 
         for scale in range(len(self.block_out_channels)):
@@ -238,22 +234,11 @@ class WeighterNet(BaseModule):
             )
 
         x_output = self.output_conv(x_dense)
-        ref_scores = ref_scores + x_output.unsqueeze(2)
-        ref_scores = ref_scores * uv_bake_masks.unsqueeze(2)
+        weights = torch.exp(x_output) * uv_bake_masks
+        gen_bakes = gen_bakes.reshape(B, V, -1, H, W).contiguous()
+        uv_bake = (gen_bakes * weights.unsqueeze(2)).sum(dim=1) / (weights.sum(dim=1, keepdim=True) + 1e-6)
 
-        breakpoint()
-
-        B, V, _, H, W = ref_scores.shape
-        gen_bakes = gen_bakes.view(B, V, -1, H, W).contiguous()
-
-        uv_bake = (gen_bakes * ref_scores).sum(dim=1) / (ref_scores.sum(dim=1) + 1e-6)
-
-        additional_outputs = {
-            "ref_scores": ref_scores,
-            
-        }
-
-        return uv_bake, additional_outputs
+        return uv_bake, weights
 
 class PointUVStage(torch.nn.Module):
     def __init__(
@@ -478,9 +463,6 @@ class PixelNorm(nn.Module):
         output = rearrange(x_norm, "B (H W) C -> B C H W", B=B, H=H)
 
         output = replace_nan(output, 0.0)
-        if torch.isnan(output).any():
-            breakpoint()
-            
         output = output * mask
         return output
 

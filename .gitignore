@@ -193,8 +193,6 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-ckpts/
-exp/
-logs/
-output/
-test/
+/blank
+/ckpts
+/test
