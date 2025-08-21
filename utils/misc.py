@@ -43,7 +43,7 @@ def process_image(image):
 
     edge_threshold = 30
     edges = cv2.threshold(grad_magnitude, edge_threshold, 255, cv2.THRESH_BINARY)[1]
-    kernel = np.ones((5, 5), np.uint8)
+    kernel = np.ones((25, 25), np.uint8)
     dilated_edges = cv2.dilate(edges, kernel, iterations=1)
 
     mask = np.zeros_like(gray)

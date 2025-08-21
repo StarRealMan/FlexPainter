@@ -65,7 +65,16 @@ class OutpainterPipe():
             baked_image,
             baked_weight
     ):
-        text_embeddings = self.clip.process_text(prompt).to(dtype=self.dtype)
+        if prompt is not None:
+            text_embeddings = self.clip.process_text(prompt).to(dtype=self.dtype)
+        else:
+            text_embeddingss = []
+            for rgb_cond in rgb_conds:
+                rgb_cond = rgb_cond.permute(1, 2, 0).unsqueeze(0).unsqueeze(0)
+                text_embeddings = self.clip.process_pseudo_text(rgb_cond).to(dtype=self.dtype)
+                text_embeddingss.append(text_embeddings)
+            text_embeddingss = torch.cat(text_embeddingss, dim=0)
+            text_embeddings = text_embeddingss.mean(dim=0)
 
         image_embeddingss = []
         for rgb_cond in rgb_conds:

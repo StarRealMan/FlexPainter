@@ -176,7 +176,7 @@ class OutpainterNet(BaseModule):
                 baked_texture,
                 baked_weights,
                 condition_drop,
-                ):
+            ):
         """
         :param x_dense: dense feature map
         :param mask_map: dense mask map

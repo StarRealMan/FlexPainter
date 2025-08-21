@@ -23,6 +23,7 @@ from utils.config import config
 from utils.video import render_video
 from utils.misc import process_image
 from utils.pipe import mv_sync_cfg_generation
+from utils.voronoi import voronoi_solve
 from utils.renderer import (
     position_to_depth,
     normalize_depth,
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     generator = torch.Generator(device=args.device).manual_seed(args.seed)
     ctx = NVDiffRasterizerContext('cuda', args.device)
     camera_poses = [(15.0, 0.0), (-15.0, 90.0), (15.0, 180.0), (-15.0, 270)]
-    camera_dist = 4
+    camera_dist = 20 / 9
     fovy = math.radians(30)
 
     flux_pipe = FluxControlSyncCFGpipeline.from_pretrained(args.base_model, torch_dtype=args.dtype)
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     redux_pipe = redux_pipe.to(args.device)
 
     mesh = load_mesh_only(args.mesh_path, args.device)
-    mesh = vertex_transform(mesh, mesh_scale=0.9)
+    mesh = vertex_transform(mesh, mesh_scale=0.5)
 
     eles = torch.tensor([pose[0] for pose in camera_poses], device=args.device)
     azims = torch.tensor([(pose[1] + args.render_azim) % 360 for pose in camera_poses], device=args.device)
@@ -120,14 +121,27 @@ if __name__ == '__main__':
         uv_pred = weighter(uv_bakes[:, :3], uv_bake_masks, torch.tensor([0]).to(args.device))
         uv_position = uv_position.permute(0, 3, 1, 2)
         uv_mask = uv_mask.float().permute(0, 3, 1, 2)
+        uv_pred = uv_pred * final_mask
+
+        image_final_mask = torch.bitwise_xor(images_white[:, :1].bool(), mask.permute(0, 3, 1, 2).bool()).float()
+        images = images * image_final_mask
 
         final_res = outpainter_pipe(
             [mesh], args.outpainter_prompt, images, uv_pred, final_mask, uv_mask, uv_position,
             args.outpainter_sample_steps, args.outpainter_cfg_scale, (0.0, 1.0), 0.0, 
         )
+
+        final_res = voronoi_solve(final_res.squeeze(0).permute(1, 2, 0), uv_mask.squeeze(), device=args.device)
+        final_res = final_res.permute(2, 0, 1).unsqueeze(0)
+
+        for i in range(len(images)):
+            save_image(images[i], os.path.join(args.result_path, f'rgb_{i}.png'))
+            save_image(uv_bakes[i, :3], os.path.join(args.result_path, f'uv_bakes_{i}.png'))
         
         save_image(uv_pred, os.path.join(args.result_path, 'uv_pred.png'))
         save_image(final_res, os.path.join(args.result_path, 'uv_paint.png'))
+        save_image(final_mask, os.path.join(args.result_path, 'final_mask.png'))
         render_video(args.frame_num, args.render_ele, camera_dist, fovy, args.device, 
                     ctx, mesh, final_res.squeeze(0), args.resolution, torch.tensor([0, 0, 0]), 
                     os.path.join(args.result_path, 'video.mp4'))
+        

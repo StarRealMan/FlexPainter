@@ -4,6 +4,7 @@ transformers==4.46.3
 diffusers==0.32.2
 peft==0.13.2
 sentencepiece==0.2.0
+open_clip_torch==3.1.0
 flash-attn==2.7.3
 einops==0.8.1
 cupy-cuda12x==13.5.1

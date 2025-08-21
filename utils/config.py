@@ -28,7 +28,7 @@ def config():
     parser.add_argument('--frame_num', type=int, default=90)
     parser.add_argument('--render_ele', type=float, default=15.0)
 
-    parser.add_argument('--mesh_path', type=str, default='./demo/bird/model.obj')
+    parser.add_argument('--mesh_path', type=str, default='./demo/jeep/5598a12768c74031b4d1d426b3105a61.obj')
     parser.add_argument('--prompt', type=str, default=None)
     parser.add_argument('--image_prompt', type=str, default=None)
     parser.add_argument('--stylize', action='store_true', default=False)
@@ -37,12 +37,11 @@ def config():
     args = parser.parse_args()
 
     fix_prompt = 'a grid of 2x2 multi-view image. white background.'
-    outpainter_default_prompt = 'a 3D model'
     if args.prompt is not None:
         args.outpainter_prompt = args.prompt
         args.prompt = fix_prompt + ' ' + args.prompt
     else:
-        args.outpainter_prompt = outpainter_default_prompt
+        args.outpainter_prompt = None
         args.prompt = fix_prompt
 
     if args.image_prompt is not None:
